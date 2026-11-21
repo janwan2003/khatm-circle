@@ -1,0 +1,10 @@
+name = "pb-khatm-circle"
+pages_build_output_dir = "public"
+compatibility_date = "2025-11-01"
+
+# Storage lives in the SQLite-backed Durable Object of the Worker pb-khatm-circle-db (worker/).
+# (The account is at the free plan's 10 D1 databases, so this venture has no D1 database.)
+[[durable_objects.bindings]]
+name = "KHATM"
+class_name = "KhatmDB"
+script_name = "pb-khatm-circle-db"

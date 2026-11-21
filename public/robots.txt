@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /k/
+Disallow: /api/
+Sitemap: https://pb-khatm-circle.pages.dev/sitemap.xml

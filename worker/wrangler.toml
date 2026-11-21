@@ -1,0 +1,12 @@
+name = "pb-khatm-circle-db"
+main = "index.js"
+compatibility_date = "2025-11-01"
+workers_dev = false
+
+[[durable_objects.bindings]]
+name = "KHATM"
+class_name = "KhatmDB"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["KhatmDB"]

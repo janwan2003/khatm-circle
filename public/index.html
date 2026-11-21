@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Khatm Circle · Organise a group Quran khatm in one link</title>
+<meta name="description" content="Free group khatm sign-up for WhatsApp groups. Share one link; everyone taps a juz to take it and marks it read. Live progress, reminders for unfinished juz, no app or sign-up.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Khatm Circle">
+<meta property="og:title" content="Khatm Circle · A group Quran khatm in one link">
+<meta property="og:description" content="Share one link in the family or mosque group. Everyone picks a juz and marks it read. No app, no sign-up.">
+<meta property="og:image" content="https://pb-khatm-circle.pages.dev/og.png">
+<meta property="og:url" content="https://pb-khatm-circle.pages.dev/">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://pb-khatm-circle.pages.dev/">
+<meta name="google-site-verification" content="g6R95T8-VFARk0PYhc-lkqete3o5OcxzkrFJ0B-vI4E" />
+<meta name="theme-color" content="#0f5b4a">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="stylesheet" href="/app.css">
+<script type="module" src="/home.js"></script>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <a class="brand" href="/"><img src="/icon.svg" alt="" width="30" height="30">Khatm Circle</a>
+  <nav><a href="#how">How it works</a><a href="#faq">FAQ</a></nav>
+</div></header>
+<main class="wrap">
+  <section class="hero">
+    <h1>Finish the Quran together, from one link</h1>
+    <p class="lead">Post the link in your family or mosque WhatsApp group. Everyone taps a juz to take it and marks it read when done. You see who is reading what, and nobody has to install an app or sign up.</p>
+  </section>
+
+  <form id="create" class="card" novalidate>
+    <h2>Start a khatm</h2>
+    <div class="seg" role="group" aria-label="Type">
+      <button type="button" data-kind="quran" aria-pressed="true"><b>Quran khatm</b><span>30 juz, one or more per person</span></button>
+      <button type="button" data-kind="dhikr" aria-pressed="false"><b>Group dhikr</b><span>Count salawat or dhikr towards a target</span></button>
+    </div>
+
+    <label id="purpose-l">What is it for?</label>
+    <div class="chips" id="purposes" role="group" aria-labelledby="purpose-l"></div>
+
+    <label for="honoree"><span id="honoree-label">Who is it for?</span> <span class="opt">(optional)</span></label>
+    <input type="text" id="honoree" maxlength="60" autocomplete="off" placeholder="e.g. Grandma Amina">
+
+    <div id="dhikr-fields" class="hidden">
+      <label for="phrase">What will everyone recite?</label>
+      <select id="phrase"></select>
+      <input type="text" id="phrase-custom" class="hidden" maxlength="60" placeholder="e.g. Hasbunallahu wa ni‘mal wakil" style="margin-top:8px">
+      <label for="target">Target</label>
+      <div class="chips" id="targets"></div>
+      <input type="number" id="target" min="1" max="100000000" inputmode="numeric" value="100000" style="margin-top:8px">
+    </div>
+
+    <label for="title">Title</label>
+    <input type="text" id="title" maxlength="80" autocomplete="off">
+    <p class="hint">This is what the group sees in the link preview.</p>
+
+    <label for="deadline">Finish by <span class="opt">(optional)</span></label>
+    <div class="chips" id="deadlines"></div>
+    <input type="date" id="deadline" style="margin-top:8px">
+
+    <label for="note">Message for the group <span class="opt">(optional)</span></label>
+    <textarea id="note" maxlength="500" placeholder="e.g. Please also make du‘a for her and the family."></textarea>
+
+    <label for="name">Your name</label>
+    <input type="text" id="name" maxlength="40" autocomplete="given-name" placeholder="How the group knows you">
+    <p class="hint">You will be the organiser: you can free up a stuck juz, add a juz for someone who is not on the link, and start a new round.</p>
+
+    <p class="err" id="err" role="alert"></p>
+    <button class="btn btn-primary btn-block" type="submit" id="go">Create the link</button>
+  </form>
+
+  <section id="recent" class="card recent hidden"><h2>Your khatms on this phone</h2><div id="recent-list"></div></section>
+
+  <section id="how">
+    <h2>How it works</h2>
+    <ol class="steps">
+      <li><b>1 · Create</b>Pick what it is for and a date to finish by. It takes 20 seconds.</li>
+      <li><b>2 · Share</b>Send the link to the group. The preview shows how many juz are still free.</li>
+      <li><b>3 · Read</b>Each person taps a juz, reads it, and taps "I've read it". When all 30 are read, everyone sees the khatm is complete.</li>
+    </ol>
+  </section>
+
+  <section id="faq" class="faq" style="margin-top:26px">
+    <h2>Questions</h2>
+    <details><summary>Does anyone need to install an app or make an account?</summary><p>No. The link opens in any phone browser, including inside WhatsApp. People type their name once and tap a juz.</p></details>
+    <details><summary>Can one person take more than one juz?</summary><p>Yes. Tap another free juz to take it too.</p></details>
+    <details><summary>What if someone takes a juz and cannot finish it?</summary><p>They can tap "Give it back" so someone else can take it. Juz that were taken more than 3 days ago and are not read yet are marked, and the organiser can free them up.</p></details>
+    <details><summary>My aunt is not on WhatsApp. Can she still take part?</summary><p>Yes. The organiser can take a juz on her behalf, type her name, and mark it read when she tells you she has finished.</p></details>
+    <details><summary>Can we do it again every month, or every Ramadan?</summary><p>Yes. When all 30 juz are read, the organiser can start the next round on the same link, so the group keeps using one link.</p></details>
+    <details><summary>Does the site show the Quran text?</summary><p>No. Each juz links to Quran.com, where you can read or listen to it. You can also read from your own mushaf.</p></details>
+    <details><summary>Who can see our khatm?</summary><p>Only people who have the link. Khatm pages are not listed or shown in search engines. There are no ads and no tracking. A khatm is deleted after 400 days without activity, or straight away when the organiser deletes it.</p></details>
+    <details><summary>What does it cost?</summary><p>Nothing. Khatm Circle is free.</p></details>
+  </section>
+</main>
+<footer class="wrap">Khatm Circle · a free tool for group Quran khatms and dhikr · <a href="/privacy">Privacy</a></footer>
+</body>
+</html>
