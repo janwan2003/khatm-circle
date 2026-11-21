@@ -1,4 +1,5 @@
 :root {
+  --urdu: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', 'Urdu Typesetting', 'Noto Naskh Arabic', serif;
   --bg: #f7f4ec;
   --card: #fffdf8;
   --ink: #1d2a26;
@@ -43,7 +44,11 @@ p { margin: 0 0 0.8em; }
 .top .wrap { display: flex; align-items: center; justify-content: space-between; height: 56px; position: relative; z-index: 1; }
 .brand { display: flex; align-items: center; gap: 10px; color: #fff; text-decoration: none; font-family: var(--serif); font-size: 1.15rem; font-weight: 600; }
 .brand img { width: 30px; height: 30px; }
-.top nav a { color: #e7f2ed; text-decoration: none; font-size: 0.93rem; margin-left: 16px; }
+.top nav { display: flex; align-items: center; gap: 14px; }
+.top nav a { color: #e7f2ed; text-decoration: none; font-size: 0.93rem; }
+.lang { font: inherit; font-size: 0.88rem; color: #fff; background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.35); border-radius: 8px; padding: 5px 6px; min-height: 34px; max-width: 9.5em; }
+.lang option { color: var(--ink); background: #fff; }
+@media (max-width: 520px) { .top nav a.wide { display: none; } }
 
 /* buttons + forms */
 button, .btn { font: inherit; cursor: pointer; border-radius: 10px; border: 1px solid transparent; padding: 11px 16px; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; }
@@ -72,7 +77,7 @@ input:focus, textarea:focus, select:focus { border-color: var(--green-2); outlin
 .chip { background: #fff; border: 1px solid #d6cfbd; color: var(--ink); font-weight: 500; padding: 8px 12px; min-height: 40px; border-radius: 999px; }
 .chip[aria-pressed=true] { background: var(--green); border-color: var(--green); color: #fff; }
 .seg { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.seg button { background: #fff; border: 1.5px solid #d6cfbd; color: var(--ink); text-align: left; display: block; padding: 12px 14px; }
+.seg button { background: #fff; border: 1.5px solid #d6cfbd; color: var(--ink); text-align: start; display: block; padding: 12px 14px; }
 .seg button b { display: block; }
 .seg button span { font-weight: 400; color: var(--muted); font-size: 0.88rem; }
 .seg button[aria-pressed=true] { border-color: var(--green); background: var(--green-soft); }
@@ -105,7 +110,7 @@ footer a { color: var(--muted); }
 .bar .t { background: #e2b85a; }
 .legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 0.9rem; color: var(--muted); margin-top: 8px; }
 .legend b { color: var(--ink); }
-.dot { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
+.dot { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-inline-end: 5px; vertical-align: -1px; }
 .dot.d { background: var(--green); } .dot.t { background: #e2b85a; } .dot.f { background: #fff; border: 1.5px dashed #b9ae94; }
 .actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
 .actions > * { flex: 1 1 auto; }
@@ -121,7 +126,7 @@ footer a { color: var(--muted); }
 .juz.done .who { color: #d8ece4; }
 .juz.mine { box-shadow: 0 0 0 3px #e2b85a; }
 .juz.done.mine { box-shadow: 0 0 0 3px #8fd0b6; }
-.juz .stale { position: absolute; top: 5px; right: 6px; width: 8px; height: 8px; border-radius: 50%; background: var(--amber); }
+.juz .stale { position: absolute; top: 5px; inset-inline-end: 6px; width: 8px; height: 8px; border-radius: 50%; background: var(--amber); }
 .juz:hover { filter: brightness(0.98); }
 
 .mine-list .row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-top: 1px solid var(--line); flex-wrap: wrap; }
@@ -157,7 +162,7 @@ footer a { color: var(--muted); }
 .backdrop { position: fixed; inset: 0; background: rgba(18, 28, 25, 0.45); z-index: 40; display: flex; align-items: flex-end; justify-content: center; }
 .sheet { background: var(--card); width: 100%; max-width: 520px; border-radius: 18px 18px 0 0; padding: 20px 20px calc(20px + env(safe-area-inset-bottom)); max-height: 92vh; overflow: auto; box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.15); }
 @media (min-width: 640px) { .backdrop { align-items: center; } .sheet { border-radius: 18px; } }
-.sheet .x { float: right; background: none; border: 0; font-size: 1.5rem; line-height: 1; padding: 4px 8px; min-height: 0; color: var(--muted); }
+.sheet .x { float: inline-end; background: none; border: 0; font-size: 1.5rem; line-height: 1; padding: 4px 8px; min-height: 0; color: var(--muted); }
 .sheet .juzhead { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
 .sheet .juzhead .ar { font-size: 1.5rem; color: var(--green); }
 .sheet .stack { display: grid; gap: 8px; margin-top: 16px; }
@@ -166,3 +171,11 @@ footer a { color: var(--muted); }
 .banner { background: var(--amber-soft); border: 1px solid #efd8b0; color: #6b4000; padding: 12px 14px; border-radius: 12px; margin: 12px 0; }
 .center { text-align: center; }
 .spinner { padding: 60px 0; text-align: center; color: var(--muted); }
+
+/* Arabic and Urdu interface (dir="rtl" is set on <html>). Headings use the Arabic face rather than a Latin serif. */
+html[lang='ar'] body { font-family: var(--sans), var(--arabic); }
+html[lang='ar'] h1, html[lang='ar'] h2, html[lang='ar'] h3, html[lang='ar'] .brand { font-family: var(--arabic); }
+html[lang='ur'] body { font-family: var(--urdu); line-height: 2.25; }
+html[lang='ur'] h1, html[lang='ur'] h2, html[lang='ur'] h3 { font-family: var(--urdu); line-height: 1.9; }
+html[lang='ur'] .brand, html[lang='ar'] .brand { font-family: var(--serif); }
+[dir='rtl'] .seg button { text-align: right; }

@@ -3,7 +3,9 @@
 // A khatm is one shared link. Quran mode: 30 juz per round; members claim a juz, then mark it read.
 // Dhikr mode: members add counts towards a shared target. People join with a name only; each member
 // gets a random token, stored hashed. The creator is the organiser (host).
-import { PURPOSES, PHRASES } from '../public/juz.js';
+import { isPurpose, purposeTitle, PHRASES, phraseLabel } from '../public/juz.js';
+import { EN_T, isLang } from '../public/i18n.js';
+import { tFor } from '../lib/ssr.js';
 
 const DAY = 86400000;
 const TTL_DAYS = 400; // a khatm with no activity for this long is deleted
@@ -14,13 +16,17 @@ const json = (data, status = 200) =>
     status,
     headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' },
   });
+// Errors carry a code (public/i18n/en.js: err.<code>) and vars, so the browser shows them in the viewer's language.
+// `error` stays as English text for old clients and logs.
 class HttpError extends Error {
-  constructor(status, msg) {
-    super(msg);
+  constructor(status, code, vars = {}) {
+    super(EN_T(`err.${code}`, { ...vars, field: vars.field ? EN_T(vars.field) : undefined }));
     this.status = status;
+    this.code = code;
+    this.vars = vars;
   }
 }
-const bad = (msg) => new HttpError(400, msg);
+const bad = (code, vars) => new HttpError(400, code, vars);
 
 function rid(n = 10) {
   const abc = 'abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -38,41 +44,41 @@ async function sha(s) {
   return [...new Uint8Array(d)].map((x) => x.toString(16).padStart(2, '0')).join('');
 }
 
-export function clean(v, max, { required = false, name = 'value' } = {}) {
+export function clean(v, max, { required = false, field = 'field.name' } = {}) {
   let s = typeof v === 'string' ? v : v == null ? '' : String(v);
   s = s.replace(/[\u0000-\u001f\u007f]+/g, ' ').replace(/\s+/g, ' ').trim();
-  if (required && !s) throw bad(`Please enter ${name}.`);
-  if ([...s].length > max) throw bad(`${name[0].toUpperCase() + name.slice(1)} is too long (max ${max} characters).`);
+  if (required && !s) throw bad('required', { field });
+  if ([...s].length > max) throw bad('tooLong', { max });
   return s;
 }
 function cleanNote(v, max) {
   let s = typeof v === 'string' ? v : '';
   s = s.replace(/\r\n?/g, '\n').replace(/[\u0000-\u0009\u000b-\u001f\u007f]+/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
-  if ([...s].length > max) throw bad(`The note is too long (max ${max} characters).`);
+  if ([...s].length > max) throw bad('tooLong', { max });
   return s;
 }
 export function cleanDate(v) {
   const s = typeof v === 'string' ? v.trim() : '';
   if (!s) return '';
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(s) || isNaN(new Date(s + 'T12:00:00Z'))) throw bad('That date does not look right.');
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(s) || isNaN(new Date(s + 'T12:00:00Z'))) throw bad('date');
   return s;
 }
-function int(v, min, max, name) {
+function int(v, min, max) {
   const n = Number(v);
-  if (!Number.isInteger(n) || n < min || n > max) throw bad(`${name} must be a whole number from ${min.toLocaleString('en')} to ${max.toLocaleString('en')}.`);
+  if (!Number.isInteger(n) || n < min || n > max) throw bad('number', { min, max });
   return n;
 }
 
 async function body(request) {
   const len = Number(request.headers.get('content-length') || 0);
-  if (len > 16000) throw bad('Request too large.');
+  if (len > 16000) throw bad('request');
   try {
     const t = await request.text();
-    if (t.length > 16000) throw bad('Request too large.');
+    if (t.length > 16000) throw bad('request');
     return t ? JSON.parse(t) : {};
   } catch (e) {
     if (e instanceof HttpError) throw e;
-    throw bad('Invalid request.');
+    throw bad('request');
   }
 }
 
@@ -90,14 +96,13 @@ async function limit(env, request, bucket, max, windowMs = 3600000) {
   )
     .bind(k, now + windowMs, now)
     .first();
-  if (row && row.n > max) throw new HttpError(429, 'Too many requests from your connection. Please wait a bit and try again.');
+  if (row && row.n > max) throw new HttpError(429, 'rate');
 }
 
-const GONE = 'This khatm does not exist (or was deleted).';
 async function getKhatm(env, id) {
-  if (!/^[A-Za-z0-9]{6,16}$/.test(id || '')) throw new HttpError(404, GONE);
+  if (!/^[A-Za-z0-9]{6,16}$/.test(id || '')) throw new HttpError(404, 'gone');
   const k = await env.DB.prepare('SELECT * FROM khatms WHERE id = ?1').bind(id).first();
-  if (!k) throw new HttpError(404, GONE);
+  if (!k) throw new HttpError(404, 'gone');
   return k;
 }
 async function whoAmI(env, request, kid) {
@@ -107,19 +112,19 @@ async function whoAmI(env, request, kid) {
 }
 async function needMember(env, request, kid) {
   const m = await whoAmI(env, request, kid);
-  if (!m) throw new HttpError(401, 'Add your name first.');
+  if (!m) throw new HttpError(401, 'join');
   return m;
 }
 async function needHost(env, request, kid) {
   const m = await needMember(env, request, kid);
-  if (!m.is_host) throw new HttpError(403, 'Only the organiser can do that.');
+  if (!m.is_host) throw new HttpError(403, 'host');
   return m;
 }
 const touch = (env, id) => env.DB.prepare('UPDATE khatms SET updated_at = ?2 WHERE id = ?1').bind(id, Date.now());
 
 async function addMember(env, kid, name, isHost) {
   const n = await env.DB.prepare('SELECT COUNT(*) AS c FROM members WHERE khatm_id = ?1').bind(kid).first();
-  if (n.c >= LIM.members) throw bad(`This khatm already has ${LIM.members} people.`);
+  if (n.c >= LIM.members) throw bad('full', { n: LIM.members });
   const token = newToken();
   const id = rid(8);
   await env.DB.prepare('INSERT INTO members (id, khatm_id, name, token_hash, is_host, created_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6)')
@@ -142,25 +147,29 @@ async function create(request, env) {
   await limit(env, request, 'create', 20);
   const b = await body(request);
   const kind = b.kind === 'dhikr' ? 'dhikr' : 'quran';
-  const purpose = PURPOSES[b.purpose] ? b.purpose : 'general';
-  const honoree = clean(b.honoree, 60, { name: 'the name' });
-  let title = clean(b.title, 80, { name: 'the title' });
-  if (!title) title = kind === 'dhikr' ? (honoree ? `Dhikr for ${honoree}` : 'Our group dhikr') : PURPOSES[purpose].title(honoree);
-  const name = clean(b.name, 40, { required: true, name: 'your name' });
+  const purpose = isPurpose(b.purpose) ? b.purpose : 'general';
+  const lang = isLang(b.lang) ? b.lang : 'en';
+  const honoree = clean(b.honoree, 60);
+  let title = clean(b.title, 80);
+  const name = clean(b.name, 40, { required: true, field: 'field.name' });
   const note = cleanNote(b.note, 500);
   const deadline = cleanDate(b.deadline);
   let target = 0;
   let phrase = '';
   if (kind === 'dhikr') {
-    target = int(b.target, 1, LIM.target, 'The target');
-    phrase = PHRASES[b.phrase] ? b.phrase : clean(b.phrase, 60, { required: true, name: 'what to recite' });
+    target = int(b.target, 1, LIM.target);
+    phrase = PHRASES[b.phrase] ? b.phrase : clean(b.phrase, 60, { required: true, field: 'field.phrase' });
+  }
+  if (!title) {
+    const t = tFor(lang);
+    title = kind === 'dhikr' ? (honoree ? t('title.dhikr', { p: phraseLabel(t, phrase), h: honoree }) : t('title.dhikr.none', { p: phraseLabel(t, phrase) })) : purposeTitle(t, purpose, honoree);
   }
   const id = rid(10);
   const now = Date.now();
   await env.DB.batch([
     env.DB.prepare(
-      'INSERT INTO khatms (id, kind, purpose, title, honoree, note, deadline, round, target, phrase, created_at, updated_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, 1, ?8, ?9, ?10, ?10)'
-    ).bind(id, kind, purpose, title, honoree, note, deadline, target, phrase, now),
+      'INSERT INTO khatms (id, kind, purpose, title, honoree, note, deadline, round, target, phrase, lang, created_at, updated_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, 1, ?8, ?9, ?11, ?10, ?10)'
+    ).bind(id, kind, purpose, title, honoree, note, deadline, target, phrase, now, lang),
     env.DB.prepare('INSERT INTO rounds (khatm_id, round, started_at) VALUES (?1, 1, ?2)').bind(id, now),
   ]);
   const m = await addMember(env, id, name, true);
@@ -185,8 +194,9 @@ async function state(env, request, k) {
     env.DB.prepare('SELECT COALESCE(SUM(n), 0) AS total FROM counts WHERE khatm_id = ?1 AND round = ?2 AND member_id = ?3').bind(k.id, k.round, me ? me.id : ''),
   ]);
   const { id, kind, purpose, title, honoree, note, deadline, round, target, phrase, created_at, updated_at } = k;
+  const lang = k.lang || 'en';
   return {
-    khatm: { id, kind, purpose, title, honoree, note, deadline, round, target, phrase, created_at, updated_at },
+    khatm: { id, kind, purpose, title, honoree, note, deadline, round, target, phrase, lang, created_at, updated_at },
     me: me ? { id: me.id, name: me.name, is_host: !!me.is_host } : null,
     parts: parts.results.map((p) => ({ juz: p.juz, reader: p.reader, mine: !!me && p.member_id === me.id, claimed_at: p.claimed_at, done_at: p.done_at })),
     members: members.results[0].c,
@@ -223,7 +233,7 @@ async function getPart(env, k, juz) {
 
 async function route(request, env, seg) {
   const m = request.method;
-  if (seg[0] !== 'k') throw new HttpError(404, 'Not found.');
+  if (seg[0] !== 'k') throw new HttpError(404, 'notFound');
   if (seg.length === 1 && m === 'POST') return create(request, env);
   const k = await getKhatm(env, seg[1]);
   const action = seg[2] || '';
@@ -238,18 +248,18 @@ async function route(request, env, seg) {
     await needHost(env, request, k.id);
     await limit(env, request, 'write', 600);
     const b = await body(request);
-    const title = b.title === undefined ? k.title : clean(b.title, 80, { required: true, name: 'the title' });
+    const title = b.title === undefined ? k.title : clean(b.title, 80, { required: true, field: 'field.title' });
     const note = b.note === undefined ? k.note : cleanNote(b.note, 500);
     const deadline = b.deadline === undefined ? k.deadline : cleanDate(b.deadline);
     await env.DB.prepare('UPDATE khatms SET title = ?2, note = ?3, deadline = ?4, updated_at = ?5 WHERE id = ?1').bind(k.id, title, note, deadline, Date.now()).run();
     return json(await state(env, request, { ...k, title, note, deadline }));
   }
-  if (m !== 'POST') throw new HttpError(405, 'Method not allowed.');
+  if (m !== 'POST') throw new HttpError(405, 'request');
 
   if (action === 'join') {
     await limit(env, request, 'join', 60);
     const b = await body(request);
-    const name = clean(b.name, 40, { required: true, name: 'your name' });
+    const name = clean(b.name, 40, { required: true, field: 'field.name' });
     const mm = await addMember(env, k.id, name, false);
     await touch(env, k.id).run();
     return json({ token: mm.token, id: mm.id }, 201);
@@ -265,9 +275,9 @@ async function route(request, env, seg) {
   };
 
   if (action === 'next-round') {
-    if (!me.is_host) throw new HttpError(403, 'Only the organiser can start a new round.');
+    if (!me.is_host) throw new HttpError(403, 'host');
     const r = await env.DB.prepare('SELECT completed_at FROM rounds WHERE khatm_id = ?1 AND round = ?2').bind(k.id, k.round).first();
-    if (!r || !r.completed_at) throw bad('Finish this round first.');
+    if (!r || !r.completed_at) throw bad('round');
     const now = Date.now();
     const deadline = cleanDate(b.deadline);
     await env.DB.batch([
@@ -279,37 +289,37 @@ async function route(request, env, seg) {
 
   if (k.kind === 'dhikr') {
     if (action === 'count') {
-      const n = int(b.n, 1, LIM.countAdd, 'The count');
+      const n = int(b.n, 1, LIM.countAdd);
       const r = await env.DB.prepare('SELECT COALESCE(SUM(n), 0) AS total FROM counts WHERE khatm_id = ?1 AND round = ?2').bind(k.id, k.round).first();
-      if (r.total + n > LIM.target * 2) throw bad('This counter is full.');
+      if (r.total + n > LIM.target * 2) throw bad('counterFull');
       await env.DB.prepare('INSERT INTO counts (khatm_id, round, member_id, n, created_at) VALUES (?1, ?2, ?3, ?4, ?5)').bind(k.id, k.round, me.id, n, Date.now()).run();
       await maybeComplete(env, k);
       return done();
     }
     if (action === 'undo-count') {
       const last = await env.DB.prepare('SELECT id FROM counts WHERE khatm_id = ?1 AND round = ?2 AND member_id = ?3 ORDER BY id DESC LIMIT 1').bind(k.id, k.round, me.id).first();
-      if (!last) throw bad('You have not added anything yet.');
+      if (!last) throw bad('nothing');
       await env.DB.prepare('DELETE FROM counts WHERE id = ?1').bind(last.id).run();
       const r = await env.DB.prepare('SELECT COALESCE(SUM(n), 0) AS total FROM counts WHERE khatm_id = ?1 AND round = ?2').bind(k.id, k.round).first();
       if (r.total < k.target) await reopen(env, k);
       return done();
     }
-    throw new HttpError(404, 'Not found.');
+    throw new HttpError(404, 'notFound');
   }
 
-  const juz = int(b.juz, 1, 30, 'Juz');
+  const juz = int(b.juz, 1, 30);
   if (action === 'claim') {
     let reader = me.name;
     if (b.reader !== undefined && b.reader !== '' && b.reader !== me.name) {
-      if (!me.is_host) throw new HttpError(403, 'Only the organiser can add a juz for someone else.');
-      reader = clean(b.reader, 40, { required: true, name: 'their name' });
+      if (!me.is_host) throw new HttpError(403, 'host');
+      reader = clean(b.reader, 40, { required: true, field: 'field.their' });
     }
     const r = await env.DB.prepare('INSERT INTO parts (khatm_id, round, juz, member_id, reader, claimed_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6) ON CONFLICT DO NOTHING')
       .bind(k.id, k.round, juz, me.id, reader, Date.now())
       .run();
     if (!r.meta.changes) {
       const p = await getPart(env, k, juz);
-      throw new HttpError(409, `${p ? p.reader : 'Someone'} just took Juz ${juz}. Please pick another one.`);
+      throw p ? new HttpError(409, 'taken', { name: p.reader, n: juz }) : new HttpError(409, 'takenAnon', { n: juz });
     }
     if (b.done) {
       await env.DB.prepare('UPDATE parts SET done_at = ?4 WHERE khatm_id = ?1 AND round = ?2 AND juz = ?3').bind(k.id, k.round, juz, Date.now()).run();
@@ -318,8 +328,8 @@ async function route(request, env, seg) {
     return done();
   }
   const p = await getPart(env, k, juz);
-  if (!p) throw new HttpError(409, `Juz ${juz} is not taken.`);
-  if (p.member_id !== me.id && !me.is_host) throw new HttpError(403, `Juz ${juz} belongs to ${p.reader}.`);
+  if (!p) throw new HttpError(409, 'notTaken', { n: juz });
+  if (p.member_id !== me.id && !me.is_host) throw new HttpError(403, 'belongs', { n: juz, name: p.reader });
   if (action === 'done') {
     const flag = b.done !== false;
     await env.DB.prepare('UPDATE parts SET done_at = ?4 WHERE khatm_id = ?1 AND round = ?2 AND juz = ?3').bind(k.id, k.round, juz, flag ? p.done_at || Date.now() : null).run();
@@ -332,7 +342,7 @@ async function route(request, env, seg) {
     await env.DB.prepare('DELETE FROM parts WHERE khatm_id = ?1 AND round = ?2 AND juz = ?3').bind(k.id, k.round, juz).run();
     return done();
   }
-  throw new HttpError(404, 'Not found.');
+  throw new HttpError(404, 'notFound');
 }
 
 export async function handle(request, env) {
@@ -341,13 +351,13 @@ export async function handle(request, env) {
     const seg = url.pathname.replace(/^\/api\//, '').split('/').filter(Boolean);
     if (request.method !== 'GET') {
       const origin = request.headers.get('origin');
-      if (origin && new URL(origin).host !== url.host) throw new HttpError(403, 'Cross-site request blocked.');
+      if (origin && new URL(origin).host !== url.host) throw new HttpError(403, 'blocked');
     }
     return await route(request, env, seg);
   } catch (e) {
-    if (e instanceof HttpError) return json({ error: e.message }, e.status);
+    if (e instanceof HttpError) return json({ error: e.message, code: e.code, vars: e.vars }, e.status);
     console.error(e);
-    return json({ error: 'Something went wrong. Please try again.' }, 500);
+    return json({ error: EN_T('err.server'), code: 'server' }, 500);
   }
 }
 
@@ -362,7 +372,7 @@ export async function preview(env, id) {
     env.DB.prepare('SELECT completed_at FROM rounds WHERE khatm_id = ?1 AND round = ?2').bind(id, k.round),
   ]);
   return {
-    k: { kind: k.kind, title: k.title, round: k.round, target: k.target, phrase: k.phrase, deadline: k.deadline },
+    k: { kind: k.kind, title: k.title, round: k.round, target: k.target, phrase: k.phrase, deadline: k.deadline, lang: k.lang || 'en' },
     s: { ...parts.results[0], ...counts.results[0], completed: !!(round.results[0] && round.results[0].completed_at) },
   };
 }

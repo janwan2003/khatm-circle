@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS khatms (
   round INTEGER NOT NULL DEFAULT 1,
   target INTEGER NOT NULL DEFAULT 0,      -- dhikr target
   phrase TEXT NOT NULL DEFAULT '',        -- dhikr phrase key or custom text
+  lang TEXT NOT NULL DEFAULT 'en',        -- interface + link preview language (public/i18n.js LANGS)
   created_at INTEGER NOT NULL,
   updated_at INTEGER NOT NULL
 );
@@ -61,3 +62,6 @@ CREATE TABLE IF NOT EXISTS rate (
   reset_at INTEGER NOT NULL
 );
 `;
+
+// Columns added after the first deploy. ALTER TABLE ADD COLUMN is not idempotent, so each runs only when missing.
+export const MIGRATIONS = [{ table: 'khatms', column: 'lang', sql: "ALTER TABLE khatms ADD COLUMN lang TEXT NOT NULL DEFAULT 'en'" }];

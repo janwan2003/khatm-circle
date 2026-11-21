@@ -183,3 +183,4 @@ organisations (custom branding, many circles). Never put ads on the khatm page.
   khatm with rounds + group dhikr, live OG, completion/result card. Verified: unit 4/4; e2e in real Chromium passes locally and on
   https://pb-khatm-circle.pages.dev; screenshots checked by eye (3 layout bugs fixed). Search Console verified + sitemap. Stage → building
   (the English product is live; languages come before calling it launched).
+- 2026-11-21 review: kept p4, stage building. live URL 200 with 0 console errors in headless Chromium at 390 px, Search Console 0 impressions 2026-11-01→11-21; usage not countable from outside (Durable Object storage, no count endpoint). Ramadan (~mid-Feb 2027) is the window, so translations (Arabic, Urdu, Indonesian, Turkish) are the right next sessions.

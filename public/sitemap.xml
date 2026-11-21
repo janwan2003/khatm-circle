@@ -1,5 +1,74 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://pb-khatm-circle.pages.dev/</loc></url>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url><loc>https://pb-khatm-circle.pages.dev/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://pb-khatm-circle.pages.dev/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://pb-khatm-circle.pages.dev/ar"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://pb-khatm-circle.pages.dev/ur"/>
+    <xhtml:link rel="alternate" hreflang="id" href="https://pb-khatm-circle.pages.dev/id"/>
+    <xhtml:link rel="alternate" hreflang="ms" href="https://pb-khatm-circle.pages.dev/ms"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://pb-khatm-circle.pages.dev/tr"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://pb-khatm-circle.pages.dev/fr"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://pb-khatm-circle.pages.dev/"/>
+  </url>
+  <url><loc>https://pb-khatm-circle.pages.dev/ar</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://pb-khatm-circle.pages.dev/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://pb-khatm-circle.pages.dev/ar"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://pb-khatm-circle.pages.dev/ur"/>
+    <xhtml:link rel="alternate" hreflang="id" href="https://pb-khatm-circle.pages.dev/id"/>
+    <xhtml:link rel="alternate" hreflang="ms" href="https://pb-khatm-circle.pages.dev/ms"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://pb-khatm-circle.pages.dev/tr"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://pb-khatm-circle.pages.dev/fr"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://pb-khatm-circle.pages.dev/"/>
+  </url>
+  <url><loc>https://pb-khatm-circle.pages.dev/ur</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://pb-khatm-circle.pages.dev/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://pb-khatm-circle.pages.dev/ar"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://pb-khatm-circle.pages.dev/ur"/>
+    <xhtml:link rel="alternate" hreflang="id" href="https://pb-khatm-circle.pages.dev/id"/>
+    <xhtml:link rel="alternate" hreflang="ms" href="https://pb-khatm-circle.pages.dev/ms"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://pb-khatm-circle.pages.dev/tr"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://pb-khatm-circle.pages.dev/fr"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://pb-khatm-circle.pages.dev/"/>
+  </url>
+  <url><loc>https://pb-khatm-circle.pages.dev/id</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://pb-khatm-circle.pages.dev/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://pb-khatm-circle.pages.dev/ar"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://pb-khatm-circle.pages.dev/ur"/>
+    <xhtml:link rel="alternate" hreflang="id" href="https://pb-khatm-circle.pages.dev/id"/>
+    <xhtml:link rel="alternate" hreflang="ms" href="https://pb-khatm-circle.pages.dev/ms"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://pb-khatm-circle.pages.dev/tr"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://pb-khatm-circle.pages.dev/fr"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://pb-khatm-circle.pages.dev/"/>
+  </url>
+  <url><loc>https://pb-khatm-circle.pages.dev/ms</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://pb-khatm-circle.pages.dev/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://pb-khatm-circle.pages.dev/ar"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://pb-khatm-circle.pages.dev/ur"/>
+    <xhtml:link rel="alternate" hreflang="id" href="https://pb-khatm-circle.pages.dev/id"/>
+    <xhtml:link rel="alternate" hreflang="ms" href="https://pb-khatm-circle.pages.dev/ms"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://pb-khatm-circle.pages.dev/tr"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://pb-khatm-circle.pages.dev/fr"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://pb-khatm-circle.pages.dev/"/>
+  </url>
+  <url><loc>https://pb-khatm-circle.pages.dev/tr</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://pb-khatm-circle.pages.dev/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://pb-khatm-circle.pages.dev/ar"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://pb-khatm-circle.pages.dev/ur"/>
+    <xhtml:link rel="alternate" hreflang="id" href="https://pb-khatm-circle.pages.dev/id"/>
+    <xhtml:link rel="alternate" hreflang="ms" href="https://pb-khatm-circle.pages.dev/ms"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://pb-khatm-circle.pages.dev/tr"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://pb-khatm-circle.pages.dev/fr"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://pb-khatm-circle.pages.dev/"/>
+  </url>
+  <url><loc>https://pb-khatm-circle.pages.dev/fr</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://pb-khatm-circle.pages.dev/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://pb-khatm-circle.pages.dev/ar"/>
+    <xhtml:link rel="alternate" hreflang="ur" href="https://pb-khatm-circle.pages.dev/ur"/>
+    <xhtml:link rel="alternate" hreflang="id" href="https://pb-khatm-circle.pages.dev/id"/>
+    <xhtml:link rel="alternate" hreflang="ms" href="https://pb-khatm-circle.pages.dev/ms"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://pb-khatm-circle.pages.dev/tr"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://pb-khatm-circle.pages.dev/fr"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://pb-khatm-circle.pages.dev/"/>
+  </url>
   <url><loc>https://pb-khatm-circle.pages.dev/privacy</loc></url>
 </urlset>

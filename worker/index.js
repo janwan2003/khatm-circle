@@ -3,7 +3,7 @@
 // It has no public route of its own (workers_dev = false; the default fetch handler returns 404).
 import { DurableObject } from 'cloudflare:workers';
 import { handle, preview } from './api.js';
-import { SCHEMA } from './schema.js';
+import { SCHEMA, MIGRATIONS } from './schema.js';
 
 // D1-style shim over ctx.storage.sql, so worker/api.js reads like ordinary D1 code.
 // Numbered parameters (?1, ?2) are rewritten to positional ones.
@@ -55,6 +55,10 @@ export class KhatmDB extends DurableObject {
     super(ctx, env);
     ctx.blockConcurrencyWhile(async () => {
       for (const stmt of SCHEMA.split(';').map((s) => s.replace(/--.*$/gm, '').trim()).filter(Boolean)) ctx.storage.sql.exec(stmt);
+      for (const m of MIGRATIONS) {
+        const cols = ctx.storage.sql.exec(`PRAGMA table_info(${m.table})`).toArray().map((c) => c.name);
+        if (!cols.includes(m.column)) ctx.storage.sql.exec(m.sql);
+      }
     });
     this.db = { DB: new ShimDB(ctx.storage) };
   }

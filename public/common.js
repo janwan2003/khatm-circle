@@ -1,4 +1,5 @@
 // Shared browser helpers: safe DOM builder, API client, per-khatm token storage, toasts, dates.
+import { t } from './lang.js';
 export function h(tag, attrs, ...kids) {
   const el = document.createElement(tag);
   for (const [k, v] of Object.entries(attrs || {})) {
@@ -47,25 +48,31 @@ export async function api(method, path, data, token) {
   try {
     res = await fetch('/api/' + path, { method, headers, body: data === undefined ? undefined : JSON.stringify(data) });
   } catch {
-    throw Object.assign(new Error('No connection. Check your internet and try again.'), { status: 0 });
+    throw Object.assign(new Error(t('err.offline')), { status: 0 });
   }
   let out = {};
   try { out = await res.json(); } catch {}
-  if (!res.ok) throw Object.assign(new Error(out.error || `Error ${res.status}`), { status: res.status });
+  if (!res.ok) {
+    // The API sends an error code (public/i18n/en.js err.*) so the message shows in the viewer's language.
+    const vars = { ...(out.vars || {}) };
+    if (vars.field) vars.field = t(vars.field);
+    const msg = out.code && t(`err.${out.code}`, vars) !== `err.${out.code}` ? t(`err.${out.code}`, vars) : out.error || t('err.http', { status: res.status });
+    throw Object.assign(new Error(msg), { status: res.status, code: out.code });
+  }
   return out;
 }
 
 let toastTimer;
 export function toast(msg) {
-  let t = document.querySelector('.toast');
-  if (!t) {
-    t = h('div', { class: 'toast', role: 'status', 'aria-live': 'polite' });
-    document.body.append(t);
+  let el = document.querySelector('.toast');
+  if (!el) {
+    el = h('div', { class: 'toast', role: 'status', 'aria-live': 'polite' });
+    document.body.append(el);
   }
-  t.textContent = msg;
-  t.classList.remove('hidden');
+  el.textContent = msg;
+  el.classList.remove('hidden');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.add('hidden'), 2800);
+  toastTimer = setTimeout(() => el.classList.add('hidden'), 2800);
 }
 
 export async function copyText(text) {
@@ -84,21 +91,16 @@ export async function copyText(text) {
   }
 }
 
-export function fmtDate(d, long) {
-  if (!d) return '';
-  const dt = new Date(d + 'T12:00:00Z');
-  if (isNaN(dt)) return '';
-  return dt.toLocaleDateString('en-GB', { weekday: long ? 'long' : 'short', month: long ? 'long' : 'short', day: 'numeric', timeZone: 'UTC' });
-}
-export const fmt = (n) => Number(n || 0).toLocaleString('en-US');
+export const fmtDate = (d, long) => t.date(d, long);
+export const fmt = (n) => t.fmt(n);
 export function ago(ts, now = Date.now()) {
   const m = Math.max(0, Math.round((now - ts) / 60000));
-  if (m < 1) return 'just now';
-  if (m < 60) return `${m} min ago`;
+  if (m < 1) return t('ago.now');
+  if (m < 60) return t('ago.min', { n: m });
   const hrs = Math.round(m / 60);
-  if (hrs < 24) return `${hrs} h ago`;
+  if (hrs < 24) return t('ago.h', { n: hrs });
   const d = Math.round(hrs / 24);
-  return d === 1 ? 'yesterday' : `${d} days ago`;
+  return d === 1 ? t('ago.yesterday') : t('ago.days', { n: d });
 }
 // Whole days from today (local) until a YYYY-MM-DD date: 0 = today, negative = past.
 export function daysUntil(d, now = Date.now()) {

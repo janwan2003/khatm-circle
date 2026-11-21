@@ -24,8 +24,8 @@ function findChrome() {
   return undefined;
 }
 
-const PHONE = { viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true };
-const DESKTOP = { viewport: { width: 1280, height: 860 } };
+const PHONE = { viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true, locale: "en-US" };
+const DESKTOP = { viewport: { width: 1280, height: 860 }, locale: "en-US" };
 const errors = [];
 const browser = await chromium.launch({ executablePath: findChrome() });
 const expect409 = new Set(['Bilal']);

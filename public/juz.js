@@ -33,25 +33,39 @@ export const JUZ = [
   ['‘Amma', 'عم', 'An-Naba 1'],
 ].map(([name, ar, start], i) => ({ n: i + 1, name, ar, start }));
 
-export const PURPOSES = {
-  memorial: { label: 'In memory of someone', short: 'In memory of', title: (h) => (h ? `Khatm in memory of ${h}` : 'Khatm in loving memory') },
-  shifa: { label: 'For someone who is ill', short: 'For the recovery of', title: (h) => (h ? `Khatm for ${h}’s recovery` : 'Khatm for shifa (healing)') },
-  ramadan: { label: 'Ramadan khatm', short: 'Ramadan', title: (h) => (h ? `${h} Ramadan khatm` : 'Our Ramadan khatm') },
-  occasion: { label: 'An occasion (wedding, exam, new baby, travel)', short: 'For', title: (h) => (h ? `Khatm for ${h}` : 'Khatm for a blessed occasion') },
-  circle: { label: 'A regular circle (monthly or weekly)', short: 'Circle', title: (h) => (h ? `${h} khatm circle` : 'Our khatm circle') },
-  general: { label: 'Something else', short: 'For', title: (h) => (h ? `Khatm for ${h}` : 'Our group khatm') },
+// Arabic names of the surahs where a juz starts, for the Arabic and Urdu interface.
+const SURAH_AR = {
+  'Al-Fatihah': 'الفاتحة', 'Al-Baqarah': 'البقرة', 'Al-Imran': 'آل عمران', 'An-Nisa': 'النساء', 'Al-Ma’idah': 'المائدة',
+  'Al-An‘am': 'الأنعام', 'Al-A‘raf': 'الأعراف', 'Al-Anfal': 'الأنفال', 'At-Tawbah': 'التوبة', Hud: 'هود', Yusuf: 'يوسف',
+  'Al-Hijr': 'الحجر', 'Al-Isra': 'الإسراء', 'Al-Kahf': 'الكهف', 'Al-Anbiya': 'الأنبياء', 'Al-Mu’minun': 'المؤمنون',
+  'Al-Furqan': 'الفرقان', 'An-Naml': 'النمل', 'Al-‘Ankabut': 'العنكبوت', 'Al-Ahzab': 'الأحزاب', 'Ya-Sin': 'يس',
+  'Az-Zumar': 'الزمر', Fussilat: 'فصلت', 'Al-Ahqaf': 'الأحقاف', 'Adh-Dhariyat': 'الذاريات', 'Al-Mujadilah': 'المجادلة',
+  'Al-Mulk': 'الملك', 'An-Naba': 'النبأ',
 };
+const arabicScript = (lang) => lang === 'ar' || lang === 'ur';
+export const juzName = (j, lang) => (arabicScript(lang) ? j.ar : j.name);
+export function juzStart(j, lang) {
+  if (!arabicScript(lang)) return j.start;
+  const [, surah, ayah] = j.start.match(/^(.*) (\d+)$/);
+  return `${SURAH_AR[surah] || surah} ${ayah}`;
+}
+
+// What a khatm is for. Labels and automatic titles are translated (public/i18n/*.js: purpose.*, title.*).
+export const PURPOSES = ['memorial', 'shifa', 'ramadan', 'occasion', 'circle', 'general'];
+export const isPurpose = (p) => PURPOSES.includes(p);
+export const purposeTitle = (t, p, h) => (h ? t(`title.${p}`, { h }) : t(`title.${p}.none`));
 
 export const PHRASES = {
-  salawat: { label: 'Salawat on the Prophet ﷺ', ar: 'اللهم صل على محمد' },
-  subhanallah: { label: 'SubhanAllah', ar: 'سبحان الله' },
-  alhamdulillah: { label: 'Alhamdulillah', ar: 'الحمد لله' },
-  allahuakbar: { label: 'Allahu Akbar', ar: 'الله أكبر' },
-  tahlil: { label: 'La ilaha illallah', ar: 'لا إله إلا الله' },
-  istighfar: { label: 'Astaghfirullah', ar: 'أستغفر الله' },
-  ikhlas: { label: 'Surah Al-Ikhlas', ar: 'سورة الإخلاص' },
-  yasin: { label: 'Surah Ya-Sin', ar: 'سورة يس' },
+  salawat: { ar: 'اللهم صل على محمد' },
+  subhanallah: { ar: 'سبحان الله' },
+  alhamdulillah: { ar: 'الحمد لله' },
+  allahuakbar: { ar: 'الله أكبر' },
+  tahlil: { ar: 'لا إله إلا الله' },
+  istighfar: { ar: 'أستغفر الله' },
+  ikhlas: { ar: 'سورة الإخلاص' },
+  yasin: { ar: 'سورة يس' },
 };
-export const phraseLabel = (p) => (PHRASES[p] ? PHRASES[p].label : p || 'Dhikr');
+// A preset phrase key is shown translated; a custom phrase is shown as the organiser typed it.
+export const phraseLabel = (t, p) => (PHRASES[p] ? t(`phrase.${p}`) : p || t('title.dhikr.plain'));
 
 export const STALE_DAYS = 3;
