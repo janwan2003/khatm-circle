@@ -1,6 +1,6 @@
 ---
 slug: khatm-circle
-stage: building
+stage: launched
 priority: 4
 url: https://pb-khatm-circle.pages.dev
 repo: https://github.com/janwan2003/khatm-circle
@@ -113,9 +113,33 @@ volume for "khatam group" or its Arabic, Urdu, Malay or Turkish equivalents.
 
 ## Status
 
-**Live: https://pb-khatm-circle.pages.dev** (Pages deploy 8e11aad0). Product, support and privacy page:
-https://janwan2003.github.io/khatm-circle/ . Search Console: site verified (META), added, and sitemap submitted on 2026-11-21
-(`scripts/gsc.py`). English only so far.
+**Live: https://pb-khatm-circle.pages.dev** (Pages deploy 0a3d9dca, Worker version e9de156f), in **7 languages**: English `/`,
+Arabic `/ar`, Urdu `/ur`, Indonesian `/id`, Malay `/ms`, Turkish `/tr`, French `/fr`. Product, support and privacy page:
+https://janwan2003.github.io/khatm-circle/ . Search Console: site verified (META) and added. The sitemap (8 URLs with hreflang
+alternates) was resubmitted on 2026-11-21 (`scripts/gsc.py sitemap` → 204). The privacy page is English only.
+
+Languages (added 2026-11-21):
+- Strings are in `public/i18n/<lang>.js`, about 290 keys. English (`en.js`) is the source and the fallback for any missing key.
+  `t()` in `public/i18n.js` handles plurals (Intl.PluralRules: Arabic uses zero/one/two/few/many/other) and Western digits.
+  Translations were written by AI subagents, one per language pair, and no native speaker has checked them yet.
+- Local words: Urdu پارہ (para), Malay juzuk, Turkish cüz/hatim, Indonesian khataman. The Arabic and Urdu UI show the juz openings and
+  surah names in Arabic script (`juzStart`).
+- `/ar` … `/fr` are rendered on the server by Pages Functions (`lib/home.js`, HTMLRewriter over `[data-i18n]`), so search engines see
+  translated HTML. Each page has a canonical URL and hreflang links, and a `modulepreload` of the language file. On `/`, a saved choice or a
+  non-English phone language redirects to that language's page.
+- Each khatm stores `lang` (the language it was created in), and its link preview and first render use it. A viewer sees, in order:
+  their saved choice (the header picker), their phone's language if it is not English, or the khatm's language.
+- API errors carry a code plus vars (`err.*`), so the browser shows them in the viewer's language.
+- Pages Function responses now set the security headers themselves (CSP etc.). `_headers` only covers static assets, so before this
+  change `/k/<id>` was served without a CSP.
+
+Translation review notes (questions the translating agents raised, for a native speaker):
+- ar: masculine verbs for unknown names (قرأ {name}); the "give it back" button wording; `card.juzRead` assumes the number is 30.
+- ur: the `title.ramadan` / `title.circle` templates are built so any name fits; `dh.howMany` is terse.
+- id: "admin" for organiser; memorial title "Khataman mengenang {h}" avoids almarhum/almarhumah; "Tidak sanggup, kembalikan" may sound abrupt.
+- ms: "Majlis khatam {h}" for a circle may sound like a one-off event; "Tidak dapat habis, pulangkan" may sound abrupt.
+- tr: "düzenleyen" (organiser) shares a root with the "Düzenle" (Edit) button; "{h} anısına hatim"; "link" rather than "bağlantı".
+- fr: titles put the name first (`{h} · khatm pour sa guérison`); counts written as "Lus : {n}".
 
 What exists (vanilla JS, no build step):
 - **Storage: one SQLite-backed Durable Object** (`KhatmDB`) in the Worker `pb-khatm-circle-db` (`worker/`, `workers_dev = false`,
@@ -137,7 +161,26 @@ What exists (vanilla JS, no build step):
 - Safety: tokens stored as SHA-256; rate limits per IP hash (create 20/h, join 60/h, writes 600/h); same-origin check on writes;
   CSP + security headers; 300 people per khatm; khatm pages `noindex`; deleted 400 days after the last activity.
 
-Verified 2026-11-21:
+Verified 2026-11-21, after the language work:
+- `node --test tests/unit/*.test.js`: 14/14 pass. Each language has exactly the English keys and the same {placeholders}, and uses only
+  plural categories that exist for it. Every `data-i18n` key in the HTML exists. Also covered: plurals, the `count` override, Arabic-script
+  juz starts, and localised previews.
+- `tests/e2e/i18n.mjs` in real Chromium **passes locally and on production, 3 of 3 runs on deploy 0a3d9dca**. Covered: each `/xx` page is
+  server-translated (lang/dir, h1, og:description, canonical, CSP header), is usable at 390 px with no sideways scroll, and has a
+  screenshot. An Arabic-locale phone on `/` is sent to `/ar` and creates an Arabic khatm (Arabic auto-title, RTL page, Arabic OG
+  title and description). A reader with an English phone sees it in Arabic, with the juz start "الفاتحة 1", and takes juz 1. The claim
+  race error arrives in Arabic. A reader with an Urdu phone sees Urdu. The picker switches to French, and the choice survives a reload.
+  A Turkish dhikr khatm gets a Turkish title and preview. Zero console errors.
+  An earlier production run (deploy 055b88ba) caught a real race, not a flake: the `/xx` form was not live until the language file
+  loaded. Fixed: the submit handler is attached at once, and the language file is modulepreloaded.
+- `tests/e2e/run.mjs` (the English suite below) still passes locally and on production after the change. The production Durable
+  Object got the new `lang` column through `MIGRATIONS` in `worker/schema.js`.
+- Screenshots checked by eye: home in ar/ur/fr, khatm in ar (organiser and reader) and ur, Turkish dhikr. This found and fixed two
+  bugs: Urdu Nastaliq lines overlapped (line-height raised to 2.25), and the dhikr "link is ready" card told people to tap a juz
+  (pre-existing in English too).
+- Live: `/` `/ar` `/ur` `/id` `/ms` `/tr` `/fr` `/privacy` `/sitemap.xml` `/i18n/ar.js` all return 200 with a CSP.
+
+Verified 2026-11-21 (first build):
 - `node --test tests/unit/*.test.js`: 4/4 pass (juz table, purpose titles, preview text for quran/dhikr/complete, schema comments).
 - `tests/e2e/run.mjs` in real Chromium (organiser desktop 1280 px, 4 readers on phone 390 px) **passes locally and on production**.
   Covered: create with validation, OG text before and after, join + take, Quran.com link, two juz per person, mark read, live update
@@ -151,21 +194,21 @@ Verified 2026-11-21:
   repeating the title.
 - Live URL checks: `/`, `/privacy`, `/k/<id>`, og.png, icons, manifest, robots, sitemap 200; CSP and X-Frame-Options present.
 
-Not covered yet: Arabic/Urdu/Malay/Turkish/French UI; real iOS Safari / Android and WhatsApp's in-app browser; how the preview renders
+Not covered yet: native-speaker review of the 6 translations; the privacy page in other languages; real iOS Safari / Android and WhatsApp's in-app browser; how the preview renders
 in WhatsApp; a per-khatm OG image; review of wording and juz names by practising users (the Arabic juz openings were written
 from memory and match Wikipedia's transliterations, but nobody has proofread the Arabic); load beyond a handful of users. The single
 Durable Object handles every khatm. That is fine at this scale; shard by khatm id if one object ever becomes the bottleneck.
 
 ## Next steps
 
-1. **Languages (core for this audience):** add i18n with Arabic (RTL), Urdu (RTL), Malay/Indonesian and Turkish (hatim/cüz), then French.
-   Use the per-community word in each (para/sipara, cüz, juzuk). Also localise the link preview text, chosen by the khatm's language.
-2. Then set stage: launched. Run the quality pass on a real phone (operator ask in the inbox) and make a per-khatm OG image with
-   the 30-tile grid (rendered in the Worker, or a cached PNG made with a canvas upload by the organiser).
-3. Have 2–3 practising users proofread the juz names, the Arabic, and the memorial and shifa wording.
-4. Reminder text the organiser can paste ("Juz 3, 14, 22 are still free. Who can take one?") and a "nudge" copy for stale juz.
-5. Be fully localised by mid-January 2027, ahead of Ramadan (expected to start around 2027-02-08). Ramadan search pages
-   ("ramadan khatm group", "khatam bersama") are the SEO angle.
+1. **Quality session (launched):** run the e2e suites on a real Android phone in WhatsApp's in-app browser (operator ask in the inbox),
+   and look at the result card (canvas) in Arabic and Urdu: it is drawn in RTL but has not been screenshotted yet.
+2. Per-khatm OG image with the 30-tile grid and the title in the khatm's language (rendered in the Worker or cached as a PNG), so the
+   WhatsApp preview shows progress visually.
+3. Native-speaker proofreading of each language (see "Translation review notes"; inbox ask). Fix wording as answers come in.
+4. Organiser reminder text ("Juz 3, 14, 22 are still free. Who can take one?") and a gentle nudge text for stale juz, in every language.
+5. Ramadan (expected around 2027-02-08): landing copy per language for "ramadan khatm group", "khatam bersama", "toplu hatim", "ختمة
+   جماعية", plus the privacy page in each language. Check Search Console impressions for the `/xx` pages from late December.
 
 ## Monetization plan
 
@@ -184,3 +227,8 @@ organisations (custom branding, many circles). Never put ads on the khatm page.
   https://pb-khatm-circle.pages.dev; screenshots checked by eye (3 layout bugs fixed). Search Console verified + sitemap. Stage → building
   (the English product is live; languages come before calling it launched).
 - 2026-11-21 review: kept p4, stage building. live URL 200 with 0 console errors in headless Chromium at 390 px, Search Console 0 impressions 2026-11-01→11-21; usage not countable from outside (Durable Object storage, no count endpoint). Ramadan (~mid-Feb 2027) is the window, so translations (Arabic, Urdu, Indonesian, Turkish) are the right next sessions.
+- 2026-11-21 builder (languages): added Arabic, Urdu, Indonesian, Malay, Turkish and French. Each khatm keeps its language, the link preview
+  is localised, `/xx` home pages are server-rendered with hreflang, and API errors are translated. Fixed two bugs found in screenshots (Urdu
+  line overlap; dhikr "link ready" card said "juz") and one race found on production (the form was dead until the language file loaded).
+  Verified: unit 14/14; i18n e2e passes locally and on production (3/3); English e2e passes on production; live URLs 200 with CSP; sitemap
+  resubmitted. Stage → launched. Translations have not been reviewed by native speakers (inbox ask).
