@@ -77,6 +77,7 @@ try {
   await hp.goto(BASE + '/');
   await hp.waitForURL(/\/ar$/);
   assert.equal(await hp.evaluate(() => document.documentElement.dir), 'rtl');
+  await hp.locator('#purposes .chip').first().waitFor(); // the form is ready once the purpose chips exist
   await hp.locator('#honoree').fill('أمينة');
   assert.equal(await hp.locator('#title').inputValue(), purposeTitle(ar, 'memorial', 'أمينة'));
   await hp.getByRole('button', { name: ar('f.submit') }).click();
@@ -142,6 +143,7 @@ try {
   const tp = await person('organiser-tr', phone('tr-TR'));
   await tp.goto(BASE + '/');
   await tp.waitForURL(/\/tr$/);
+  await tp.locator('#purposes .chip').first().waitFor();
   await tp.locator('.seg button[data-kind=dhikr]').click();
   await tp.locator('#target').fill('1000');
   await tp.locator('#name').fill('Ayşe');

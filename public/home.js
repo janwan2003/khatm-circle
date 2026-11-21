@@ -38,8 +38,15 @@ function sync() {
   for (const b of document.querySelectorAll('#deadlines .chip')) b.setAttribute('aria-pressed', String(b.dataset.d === $('#deadline').value));
 }
 
+// The form must never fall back to a native submit while the language file is still loading.
+const ready = useLang(pageLang);
+$('#create').addEventListener('submit', (e) => {
+  e.preventDefault();
+  ready.then(() => submit(e));
+});
+
 async function init() {
-  await useLang(pageLang);
+  await ready;
   langPicker((l) => location.assign(homeOf(l)));
   for (const k of PURPOSES)
     $('#purposes').append(h('button', { type: 'button', class: 'chip', 'data-p': k, 'aria-pressed': 'false', onclick: () => { purpose = k; sync(); } }, t(`purpose.${k}`)));
@@ -53,7 +60,6 @@ async function init() {
   for (const b of document.querySelectorAll('.seg button')) b.addEventListener('click', () => { kind = b.dataset.kind; sync(); });
   for (const id of ['#honoree', '#phrase', '#phrase-custom', '#target', '#deadline']) $(id).addEventListener('input', sync);
   $('#title').addEventListener('input', () => { titleEdited = $('#title').value.trim() !== ''; });
-  $('#create').addEventListener('submit', submit);
   sync();
 
   const recent = store.recent().filter((r) => store.get(r.id));
@@ -63,8 +69,7 @@ async function init() {
   }
 }
 
-async function submit(e) {
-  e.preventDefault();
+async function submit() {
   $('#err').textContent = '';
   const name = $('#name').value.trim();
   if (!name) {
