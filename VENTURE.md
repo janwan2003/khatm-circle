@@ -113,7 +113,7 @@ volume for "khatam group" or its Arabic, Urdu, Malay or Turkish equivalents.
 
 ## Status
 
-**Live: https://pb-khatm-circle.pages.dev** (Pages deploy 0a3d9dca, Worker version e9de156f), in **7 languages**: English `/`,
+**Live: https://pb-khatm-circle.pages.dev** (Pages deploy 0a3d9dca, Worker version 7f2493d4), in **7 languages**: English `/`,
 Arabic `/ar`, Urdu `/ur`, Indonesian `/id`, Malay `/ms`, Turkish `/tr`, French `/fr`. Product, support and privacy page:
 https://janwan2003.github.io/khatm-circle/ . Search Console: site verified (META) and added. The sitemap (8 URLs with hreflang
 alternates) was resubmitted on 2026-11-21 (`scripts/gsc.py sitemap` → 204). The privacy page is English only.
@@ -230,5 +230,5 @@ organisations (custom branding, many circles). Never put ads on the khatm page.
 - 2026-11-21 builder (languages): added Arabic, Urdu, Indonesian, Malay, Turkish and French. Each khatm keeps its language, the link preview
   is localised, `/xx` home pages are server-rendered with hreflang, and API errors are translated. Fixed two bugs found in screenshots (Urdu
   line overlap; dhikr "link ready" card said "juz") and one race found on production (the form was dead until the language file loaded).
-  Verified: unit 14/14; i18n e2e passes locally and on production (3/3); English e2e passes on production; live URLs 200 with CSP; sitemap
+  Verified: unit 14/14; i18n e2e passes locally and on production (3/3, plus 1 after the final Worker deploy); English e2e passes on production; live URLs 200 with CSP; sitemap
   resubmitted. Stage → launched. Translations have not been reviewed by native speakers (inbox ask).
